@@ -1,0 +1,159 @@
+'use client'
+
+import { useState } from 'react'
+import { Bell, Settings2, X } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { DashboardView } from './dashboard-view'
+import { GraphicsView } from './graphics-view'
+import { LineupView } from './lineup-view'
+import { PlayerDialog } from './player-dialog'
+import { PlayersView } from './players-view'
+import { MobileNavigation, Sidebar } from './sidebar'
+import { TeamSetupDialog } from './team-setup-dialog'
+import type { Lineup, MatchRecord, Player, Team, ViewKey } from './types'
+
+const titles: Record<ViewKey, string> = {
+  overview: 'Team overview',
+  players: 'Player roster',
+  lineup: 'Lineup selection',
+  graphics: 'Scoreline studio',
+}
+
+export function TeamManagerApp() {
+  const [activeSection, setActiveSection] = useState<ViewKey>('overview')
+  const [team, setTeam] = useState<Team | null>(null)
+  const [players, setPlayers] = useState<Player[]>([])
+  const [lineup, setLineup] = useState<Lineup>({ formation: '4-3-3', slots: [] })
+  const [matches, setMatches] = useState<MatchRecord[]>([])
+  const [teamDialogOpen, setTeamDialogOpen] = useState(false)
+  const [playerDialog, setPlayerDialog] = useState<{ open: boolean; player: Player | null }>({ open: false, player: null })
+  const [notice, setNotice] = useState('')
+
+  function openNewPlayer() {
+    setPlayerDialog({ open: true, player: null })
+  }
+
+  function navigateTo(section: ViewKey) {
+    setActiveSection(section)
+    setNotice('')
+    window.scrollTo({ top: 0, behavior: 'auto' })
+  }
+
+  function openPlayer(player: Player) {
+    setPlayerDialog({ open: true, player })
+  }
+
+  function savePlayer(player: Player) {
+    const isExisting = players.some((item) => item.id === player.id)
+    setPlayers((current) => isExisting
+      ? current.map((item) => item.id === player.id ? player : item)
+      : [player, ...current])
+    setPlayerDialog({ open: false, player: null })
+    setNotice(`${player.name} profile ${isExisting ? 'updated' : 'added'} in this preview.`)
+  }
+
+  function deletePlayer(playerId: string) {
+    const removed = players.find((player) => player.id === playerId)
+    setPlayers((current) => current.filter((player) => player.id !== playerId))
+    setLineup((current) => ({
+      ...current,
+      slots: current.slots.map((slot) => slot.playerId === playerId ? { ...slot, playerId: null } : slot),
+    }))
+    setPlayerDialog({ open: false, player: null })
+    setNotice(removed ? `${removed.name} removed from this preview roster.` : 'Player removed from this preview roster.')
+  }
+
+  function saveTeam(nextTeam: Team) {
+    setTeam(nextTeam)
+    setTeamDialogOpen(false)
+    setNotice(`${nextTeam.name} club profile updated.`)
+  }
+
+  function saveLineup(nextLineup: Lineup) {
+    setLineup(nextLineup)
+    setNotice('Starting lineup saved in this preview.')
+  }
+
+  function saveMatch(match: MatchRecord) {
+    setMatches((current) => [match, ...current.filter((item) => item.id !== match.id)])
+    setNotice(`${match.opponent} added to the match list.`)
+  }
+
+  return (
+    <div className="touchline-app">
+      <Sidebar
+        activeSection={activeSection}
+        onSelect={navigateTo}
+        team={team}
+        playerCount={players.length}
+      />
+
+      <div className="main-column">
+        <header className="topbar">
+          <div className="topbar-heading">
+            <span className="topbar-mobile-mark" aria-hidden="true">T</span>
+            <div>
+              <p className="topbar-eyebrow">TOUCHLINE <span>/</span> CLUB OPERATIONS</p>
+              <h1>{titles[activeSection]}</h1>
+            </div>
+          </div>
+          <div className="topbar-actions">
+            <span className="preview-pill"><span /> UI preview</span>
+            <Button type="button" variant="outline" size="lg" onClick={() => setTeamDialogOpen(true)}>
+              <Settings2 data-icon="inline-start" aria-hidden="true" />
+              {team ? 'Club settings' : 'Set up club'}
+            </Button>
+            <Button type="button" variant="ghost" size="icon" className="topbar-alert" aria-label="Notifications are not connected yet" title="Notifications are not connected yet" disabled>
+              <Bell aria-hidden="true" />
+            </Button>
+          </div>
+        </header>
+
+        {notice ? (
+          <div className="save-notice" role="status">
+            <span className="notice-check" aria-hidden="true">✓</span>
+            <span>{notice}</span>
+            <Button type="button" variant="ghost" size="icon" aria-label="Dismiss notification" onClick={() => setNotice('')}>
+              <X aria-hidden="true" />
+            </Button>
+          </div>
+        ) : null}
+
+        <main className="page-content">
+          {activeSection === 'overview' ? (
+            <DashboardView
+              team={team}
+              players={players}
+              lineup={lineup}
+              matches={matches}
+              onCreateTeam={() => setTeamDialogOpen(true)}
+              onAddPlayer={openNewPlayer}
+              onOpenPlayer={openPlayer}
+              onNavigate={navigateTo}
+            />
+          ) : null}
+          {activeSection === 'players' ? (
+            <PlayersView players={players} onAddPlayer={openNewPlayer} onOpenPlayer={openPlayer} />
+          ) : null}
+          {activeSection === 'lineup' ? (
+            <LineupView players={players} lineup={lineup} onSave={saveLineup} onAddPlayer={openNewPlayer} />
+          ) : null}
+          {activeSection === 'graphics' ? (
+            <GraphicsView team={team} matches={matches} onSaveMatch={saveMatch} />
+          ) : null}
+        </main>
+
+        <MobileNavigation activeSection={activeSection} onSelect={navigateTo} />
+      </div>
+
+      <TeamSetupDialog open={teamDialogOpen} team={team} onOpenChange={setTeamDialogOpen} onSave={saveTeam} />
+      <PlayerDialog
+        open={playerDialog.open}
+        player={playerDialog.player}
+        onOpenChange={(open) => setPlayerDialog((current) => ({ ...current, open }))}
+        onSave={savePlayer}
+        onDelete={deletePlayer}
+      />
+    </div>
+  )
+}
