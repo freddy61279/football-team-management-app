@@ -42,6 +42,11 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
       }
       setUploading(true)
       const supabase = createSupabaseBrowserClient()
+      if (!supabase) {
+        setUploadError('Account services are temporarily unavailable. Try again shortly.')
+        setUploading(false)
+        return
+      }
       const { data: userData } = await supabase.auth.getUser()
       const userId = userData.user?.id
       if (!userId) {

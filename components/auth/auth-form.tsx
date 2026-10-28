@@ -44,6 +44,11 @@ export function AuthForm({ mode }: AuthFormProps) {
     setFeedback("")
     setIsSubmitting(true)
     const supabase = createSupabaseBrowserClient()
+    if (!supabase) {
+      setFeedback("Account services are temporarily unavailable. Please try again shortly.")
+      setIsSubmitting(false)
+      return
+    }
 
     const result = isSignUp
       ? await supabase.auth.signUp({

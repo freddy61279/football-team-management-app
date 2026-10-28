@@ -37,8 +37,10 @@ export function TeamManagerApp() {
     const supabase = createSupabaseBrowserClient()
     if (!supabase) return
 
-    void supabase.auth.getUser().then(({ data }) => {
-      const metadata = data.user?.user_metadata
+    void supabase.auth.getUser().then((result: {
+      data: { user: { user_metadata?: Record<string, unknown> | null } | null }
+    }) => {
+      const metadata = result.data.user?.user_metadata
       const clubName = typeof metadata?.club_name === 'string' ? metadata.club_name.trim() : ''
       if (!clubName) return
 
