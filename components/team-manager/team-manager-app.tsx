@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Bell, LogOut, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -11,6 +11,7 @@ import { PlayerDialog } from './player-dialog'
 import { PlayersView } from './players-view'
 import { MobileNavigation, Sidebar } from './sidebar'
 import { TeamSetupDialog } from './team-setup-dialog'
+import { createSupabaseBrowserClient } from '@/lib/supabase/client'
 import type { Lineup, MatchRecord, Player, PlayerDraft, Team, ViewKey } from './types'
 import type { GraphicType } from './lineup-view'
 
@@ -31,6 +32,25 @@ export function TeamManagerApp() {
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [playerDialog, setPlayerDialog] = useState<{ open: boolean; player: Player | null }>({ open: false, player: null })
   const [notice, setNotice] = useState('')
+
+  useEffect(() => {
+    const supabase = createSupabaseBrowserClient()
+
+    void supabase.auth.getUser().then(({ data }) => {
+      const metadata = data.user?.user_metadata
+      const clubName = typeof metadata?.club_name === 'string' ? metadata.club_name.trim() : ''
+      if (!clubName) return
+
+      setTeam({
+        name: clubName,
+        shortName: typeof metadata.short_name === 'string' && metadata.short_name.trim()
+          ? metadata.short_name.trim().slice(0, 4).toUpperCase()
+          : clubName.replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase(),
+        primaryColor: typeof metadata.primary_color === 'string' ? metadata.primary_color : '#B8E95B',
+        secondaryColor: typeof metadata.secondary_color === 'string' ? metadata.secondary_color : '#18352B',
+      })
+    })
+  }, [])
 
   function openNewPlayer() {
     setPlayerDialog({ open: true, player: null })
@@ -78,10 +98,24 @@ export function TeamManagerApp() {
     setNotice(removed ? `${removed.name} removed from this preview roster.` : 'Player removed from this preview roster.')
   }
 
-  function saveTeam(nextTeam: Team) {
+  async function saveTeam(nextTeam: Team) {
     setTeam(nextTeam)
     setTeamDialogOpen(false)
     setNotice(`${nextTeam.name} club profile updated.`)
+
+    const supabase = createSupabaseBrowserClient()
+    const { error } = await supabase.auth.updateUser({
+      data: {
+        club_name: nextTeam.name,
+        short_name: nextTeam.shortName,
+        primary_color: nextTeam.primaryColor,
+        secondary_color: nextTeam.secondaryColor,
+      },
+    })
+
+    if (error) {
+      setNotice('Club profile updated for this session, but could not be synced to your account.')
+    }
   }
 
   function saveLineup(nextLineup: Lineup) {
