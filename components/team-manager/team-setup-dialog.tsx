@@ -9,7 +9,7 @@ interface Props {
   open: boolean
   team: Team | null
   onOpenChange: (open: boolean) => void
-  onSave: (team: Team) => void
+  onSave: (team: Team) => void | Promise<void>
 }
 
 export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
@@ -32,8 +32,9 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
     let emblemUrl = team?.emblemUrl
 
     if (emblem instanceof File && emblem.size > 0) {
-      if (!emblem.type.startsWith('image/')) {
-        setUploadError('Choose an image file for the team emblem.')
+      const allowedTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml']
+      if (!allowedTypes.includes(emblem.type)) {
+        setUploadError('Choose a PNG, JPG, WebP, or SVG image for the team emblem.')
         return
       }
       if (emblem.size > 2 * 1024 * 1024) {
@@ -54,11 +55,19 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
         setUploading(false)
         return
       }
-      const extension = emblem.name.split('.').pop()?.toLowerCase() || 'png'
-      const path = `${userId}/emblem-${Date.now()}.${extension}`
-      const { error } = await supabase.storage.from('team-emblems').upload(path, emblem, { upsert: true, contentType: emblem.type })
+      const extension = emblem.type === 'image/svg+xml'
+        ? 'svg'
+        : emblem.type === 'image/jpeg'
+          ? 'jpg'
+          : emblem.type.split('/')[1]
+      const path = `${userId}/emblem.${extension}`
+      const { error } = await supabase.storage.from('team-emblems').upload(path, emblem, {
+        upsert: true,
+        contentType: emblem.type,
+        cacheControl: '3600',
+      })
       if (error) {
-        setUploadError('Could not upload the emblem. Check that the team-emblems bucket is available.')
+        setUploadError(`Could not upload the emblem: ${error.message}`)
         setUploading(false)
         return
       }

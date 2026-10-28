@@ -91,7 +91,10 @@ export function DashboardView({ team, players, lineup, matches, onCreateTeam, on
         <div className="hero-graphic" aria-label={team?.emblemUrl ? `${team.name} club emblem` : 'Club emblem not uploaded'}>
           <div className="hero-ring hero-ring--outer" aria-hidden="true" />
           <div className="hero-ring hero-ring--inner" aria-hidden="true" />
-          <div className="hero-club-mark" style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' }}>
+          <div
+            className="hero-club-mark"
+            style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' } as React.CSSProperties}
+          >
             {team?.emblemUrl ? (
               <img src={team.emblemUrl} alt={`${team.name} club emblem`} />
             ) : (
