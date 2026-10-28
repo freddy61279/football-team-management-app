@@ -1,7 +1,8 @@
 "use client"
 
 import Link from "next/link"
-import { useState, type MouseEvent } from "react"
+import { useState, type FormEvent } from "react"
+import { useRouter } from "next/navigation"
 import { ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -14,6 +15,7 @@ import {
 } from "@/components/ui/field"
 import { Input } from "@/components/ui/input"
 import { ClubDetailsFields } from "@/components/auth/club-details-fields"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 type AuthFormProps = {
   mode: "sign-in" | "sign-up"
@@ -21,27 +23,64 @@ type AuthFormProps = {
 
 export function AuthForm({ mode }: AuthFormProps) {
   const isSignUp = mode === "sign-up"
+  const router = useRouter()
   const [feedback, setFeedback] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  function handlePreview(event: MouseEvent<HTMLButtonElement>) {
-    const form = event.currentTarget.form
-    if (!form?.reportValidity()) return
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+    const form = event.currentTarget
+    if (!form.reportValidity()) return
 
-    setFeedback("")
+    const formData = new FormData(form)
+    const email = String(formData.get("email") ?? "").trim()
+    const password = String(formData.get("password") ?? "")
 
-    if (isSignUp) {
-      const formData = new FormData(form)
-      if (formData.get("password") !== formData.get("confirmPassword")) {
-        setFeedback("Those passwords do not match yet.")
-        return
-      }
+    if (isSignUp && password !== formData.get("confirmPassword")) {
+      setFeedback("Those passwords do not match yet.")
+      return
     }
 
-    setFeedback("This is a UI preview only. No credentials or club details were sent or saved.")
+    setFeedback("")
+    setIsSubmitting(true)
+    const supabase = createSupabaseBrowserClient()
+
+    const result = isSignUp
+      ? await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            emailRedirectTo: process.env.NEXT_PUBLIC_DEV_SUPABASE_REDIRECT_URL ?? `${window.location.origin}/`,
+            data: {
+              contact_name: String(formData.get("contactName") ?? "").trim(),
+              club_name: String(formData.get("clubName") ?? "").trim(),
+              short_name: String(formData.get("shortName") ?? "").trim(),
+              city: String(formData.get("city") ?? "").trim(),
+              country: String(formData.get("country") ?? "").trim(),
+              competition: String(formData.get("competition") ?? "").trim(),
+            },
+          },
+        })
+      : await supabase.auth.signInWithPassword({ email, password })
+
+    if (result.error) {
+      setFeedback("We could not complete that request. Check your details and try again.")
+      setIsSubmitting(false)
+      return
+    }
+
+    if (isSignUp && !result.data.session) {
+      setFeedback("Account created. Check your email to confirm your address, then sign in.")
+      setIsSubmitting(false)
+      return
+    }
+
+    router.push("/")
+    router.refresh()
   }
 
   return (
-    <form className="auth-form" autoComplete="on">
+    <form className="auth-form" autoComplete="on" onSubmit={handleSubmit}>
       {isSignUp ? (
         <div className="auth-form-sections">
           <FieldSet className="auth-field-set">
@@ -140,11 +179,11 @@ export function AuthForm({ mode }: AuthFormProps) {
       ) : null}
 
       <div className="auth-form-actions">
-        <Button className="auth-submit-button" type="button" size="lg" onClick={handlePreview}>
-          {isSignUp ? "Create club account" : "Sign in"}
-          <ArrowRight data-icon="inline-end" aria-hidden="true" />
+        <Button className="auth-submit-button" type="submit" size="lg" disabled={isSubmitting}>
+          {isSubmitting ? "Please wait…" : isSignUp ? "Create club account" : "Sign in"}
+          {!isSubmitting ? <ArrowRight data-icon="inline-end" aria-hidden="true" /> : null}
         </Button>
-        <p className="auth-form-disclaimer">Preview only — your details are not submitted or saved.</p>
+        <p className="auth-form-disclaimer">Your account details are securely handled by Supabase.</p>
         <p className="auth-switch-row">
           {isSignUp ? "Already have an account?" : "New to Touchline?"}
           <Link href={isSignUp ? "/sign-in" : "/sign-up"}>
