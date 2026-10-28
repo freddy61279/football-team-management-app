@@ -35,6 +35,7 @@ export function TeamManagerApp() {
 
   useEffect(() => {
     const supabase = createSupabaseBrowserClient()
+    if (!supabase) return
 
     void supabase.auth.getUser().then(({ data }) => {
       const metadata = data.user?.user_metadata
@@ -105,6 +106,8 @@ export function TeamManagerApp() {
     setNotice(`${nextTeam.name} club profile updated.`)
 
     const supabase = createSupabaseBrowserClient()
+    if (!supabase) return
+
     const { error } = await supabase.auth.updateUser({
       data: {
         club_name: nextTeam.name,
