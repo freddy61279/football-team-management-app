@@ -942,6 +942,8 @@
   .topbar-actions { gap: 4px; }
   .preview-pill,.topbar-alert { display: none; }
   .topbar-actions > [data-slot="button"] { height: 34px; padding-inline: 9px; font-size: 9px; }
+  .topbar-actions > .topbar-signout-button { width: 34px; padding-inline: 0; }
+  .topbar-signout-label { display: none; }
   .page-content { padding: 24px 15px 32px; }
   .page-section { gap: 15px; }
   .page-intro { align-items: flex-start; flex-direction: column; gap: 14px; }

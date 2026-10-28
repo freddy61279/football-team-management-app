@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Bell, Settings2, X } from 'lucide-react'
+import Link from 'next/link'
+import { Bell, LogOut, Settings2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DashboardView } from './dashboard-view'
 import { GraphicsView } from './graphics-view'
@@ -117,6 +118,16 @@ export function TeamManagerApp() {
             </Button>
             <Button type="button" variant="ghost" size="icon" className="topbar-alert" aria-label="Notifications are not connected yet" title="Notifications are not connected yet" disabled>
               <Bell aria-hidden="true" />
+            </Button>
+            <Button
+              render={<Link href="/sign-in" />}
+              variant="outline"
+              size="lg"
+              className="topbar-signout-button"
+              aria-label="Sign out"
+            >
+              <LogOut data-icon="inline-start" aria-hidden="true" />
+              <span className="topbar-signout-label">Sign out</span>
             </Button>
           </div>
         </header>
