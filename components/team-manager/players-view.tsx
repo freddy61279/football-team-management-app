@@ -3,13 +3,15 @@
 import { useMemo, useState } from 'react'
 import { ChevronRight, Plus, Search, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { Player, PlayerPosition } from './types'
+import { RosterImportPanel } from './roster-import-panel'
+import type { Player, PlayerDraft, PlayerPosition } from './types'
 import { getInitials } from './types'
 
 interface Props {
   players: Player[]
   onAddPlayer: () => void
   onOpenPlayer: (player: Player) => void
+  onImportPlayers: (players: PlayerDraft[]) => void
 }
 
 const positionOptions: Array<'All positions' | PlayerPosition> = [
@@ -20,7 +22,7 @@ const positionOptions: Array<'All positions' | PlayerPosition> = [
   'Forward',
 ]
 
-export function PlayersView({ players, onAddPlayer, onOpenPlayer }: Props) {
+export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayers }: Props) {
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState<'All positions' | PlayerPosition>('All positions')
 
@@ -62,6 +64,8 @@ export function PlayersView({ players, onAddPlayer, onOpenPlayer }: Props) {
         </div>
         <div className="roster-summary-note">Select a player to open their profile.</div>
       </div>
+
+      <RosterImportPanel players={players} onImportPlayers={onImportPlayers} />
 
       <section className="content-card roster-card" aria-label="Player roster">
         <div className="roster-toolbar">

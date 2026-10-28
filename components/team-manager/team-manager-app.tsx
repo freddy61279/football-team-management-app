@@ -10,7 +10,7 @@ import { PlayerDialog } from './player-dialog'
 import { PlayersView } from './players-view'
 import { MobileNavigation, Sidebar } from './sidebar'
 import { TeamSetupDialog } from './team-setup-dialog'
-import type { Lineup, MatchRecord, Player, Team, ViewKey } from './types'
+import type { Lineup, MatchRecord, Player, PlayerDraft, Team, ViewKey } from './types'
 
 const titles: Record<ViewKey, string> = {
   overview: 'Team overview',
@@ -50,6 +50,12 @@ export function TeamManagerApp() {
       : [player, ...current])
     setPlayerDialog({ open: false, player: null })
     setNotice(`${player.name} profile ${isExisting ? 'updated' : 'added'} in this preview.`)
+  }
+
+  function importPlayers(drafts: PlayerDraft[]) {
+    const importedPlayers = drafts.map((draft) => ({ ...draft, id: globalThis.crypto.randomUUID() }))
+    setPlayers((current) => [...importedPlayers, ...current])
+    setNotice(`${importedPlayers.length} player${importedPlayers.length === 1 ? '' : 's'} imported to this preview squad.`)
   }
 
   function deletePlayer(playerId: string) {
@@ -133,7 +139,7 @@ export function TeamManagerApp() {
             />
           ) : null}
           {activeSection === 'players' ? (
-            <PlayersView players={players} onAddPlayer={openNewPlayer} onOpenPlayer={openPlayer} />
+            <PlayersView players={players} onAddPlayer={openNewPlayer} onOpenPlayer={openPlayer} onImportPlayers={importPlayers} />
           ) : null}
           {activeSection === 'lineup' ? (
             <LineupView players={players} lineup={lineup} onSave={saveLineup} onAddPlayer={openNewPlayer} />
