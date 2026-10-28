@@ -121,6 +121,7 @@ export function TeamManagerApp() {
             </Button>
             <Button
               render={<Link href="/sign-in" />}
+              nativeButton={false}
               variant="outline"
               size="lg"
               className="topbar-signout-button"
