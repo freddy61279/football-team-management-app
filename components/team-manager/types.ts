@@ -20,6 +20,7 @@ export interface Player {
   availability: PlayerAvailability
   preferredFoot: PreferredFoot
   dateOfBirth: string
+  headshot?: string
   appearances: number
   goals: number
   assists: number

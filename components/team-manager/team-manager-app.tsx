@@ -58,6 +58,12 @@ export function TeamManagerApp() {
     setNotice(`${importedPlayers.length} player${importedPlayers.length === 1 ? '' : 's'} imported to this preview squad.`)
   }
 
+  function updatePlayerHeadshot(playerId: string, headshot: string) {
+    const player = players.find((item) => item.id === playerId)
+    setPlayers((current) => current.map((item) => item.id === playerId ? { ...item, headshot } : item))
+    setNotice(`${player?.name ?? 'Player'} headshot updated in this preview.`)
+  }
+
   function deletePlayer(playerId: string) {
     const removed = players.find((player) => player.id === playerId)
     setPlayers((current) => current.filter((player) => player.id !== playerId))
@@ -139,7 +145,13 @@ export function TeamManagerApp() {
             />
           ) : null}
           {activeSection === 'players' ? (
-            <PlayersView players={players} onAddPlayer={openNewPlayer} onOpenPlayer={openPlayer} onImportPlayers={importPlayers} />
+            <PlayersView
+              players={players}
+              onAddPlayer={openNewPlayer}
+              onOpenPlayer={openPlayer}
+              onImportPlayers={importPlayers}
+              onUploadHeadshot={updatePlayerHeadshot}
+            />
           ) : null}
           {activeSection === 'lineup' ? (
             <LineupView players={players} lineup={lineup} onSave={saveLineup} onAddPlayer={openNewPlayer} />

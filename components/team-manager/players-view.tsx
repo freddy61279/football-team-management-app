@@ -1,17 +1,18 @@
 'use client'
 
 import { useMemo, useState } from 'react'
-import { ChevronRight, Plus, Search, Users } from 'lucide-react'
+import { Plus, Search, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { PlayerCard } from './player-card'
 import { RosterImportPanel } from './roster-import-panel'
 import type { Player, PlayerDraft, PlayerPosition } from './types'
-import { getInitials } from './types'
 
 interface Props {
   players: Player[]
   onAddPlayer: () => void
   onOpenPlayer: (player: Player) => void
   onImportPlayers: (players: PlayerDraft[]) => void
+  onUploadHeadshot: (playerId: string, headshot: string) => void
 }
 
 const positionOptions: Array<'All positions' | PlayerPosition> = [
@@ -22,7 +23,7 @@ const positionOptions: Array<'All positions' | PlayerPosition> = [
   'Forward',
 ]
 
-export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayers }: Props) {
+export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayers, onUploadHeadshot }: Props) {
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState<'All positions' | PlayerPosition>('All positions')
 
@@ -62,7 +63,7 @@ export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayer
         <div className="roster-summary">
           <strong>{availableCount}</strong><span>available for selection</span>
         </div>
-        <div className="roster-summary-note">Select a player to open their profile.</div>
+        <div className="roster-summary-note">Open a profile or add a headshot directly from a player card.</div>
       </div>
 
       <RosterImportPanel players={players} onImportPlayers={onImportPlayers} />
@@ -109,48 +110,15 @@ export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayer
             <p>Try another name, squad number, or position.</p>
           </div>
         ) : (
-          <div className="roster-table-wrap">
-            <table className="roster-table">
-              <thead>
-                <tr>
-                  <th scope="col">Player</th>
-                  <th scope="col">Position</th>
-                  <th scope="col">Availability</th>
-                  <th scope="col" className="numeric-cell">Apps</th>
-                  <th scope="col" className="numeric-cell">G / A</th>
-                  <th scope="col"><span className="sr-only">Open profile</span></th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredPlayers.map((player) => (
-                  <tr key={player.id}>
-                    <td>
-                      <button type="button" className="player-cell-button" onClick={() => onOpenPlayer(player)}>
-                        <span className="player-number">{String(player.number).padStart(2, '0')}</span>
-                        <span className="player-initials">{getInitials(player.name)}</span>
-                        <span className="player-cell-copy">
-                          <strong>{player.name}</strong>
-                          <small>{player.preferredFoot} foot</small>
-                        </span>
-                      </button>
-                    </td>
-                    <td><span className="position-label">{player.position}</span></td>
-                    <td>
-                      <span className={`status-pill status-pill--${player.availability.toLowerCase()}`}>
-                        <span />{player.availability}
-                      </span>
-                    </td>
-                    <td className="numeric-cell">{player.appearances}</td>
-                    <td className="numeric-cell">{player.goals} / {player.assists}</td>
-                    <td className="row-action-cell">
-                      <Button type="button" variant="ghost" size="icon" aria-label={`Open ${player.name} profile`} onClick={() => onOpenPlayer(player)}>
-                        <ChevronRight aria-hidden="true" />
-                      </Button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="player-card-grid">
+            {filteredPlayers.map((player) => (
+              <PlayerCard
+                key={player.id}
+                player={player}
+                onOpenPlayer={onOpenPlayer}
+                onUploadHeadshot={onUploadHeadshot}
+              />
+            ))}
           </div>
         )}
       </section>

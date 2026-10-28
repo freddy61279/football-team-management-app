@@ -67,6 +67,7 @@ export function PlayerDialog({ open, player, onOpenChange, onSave, onDelete }: P
       goals: Number(values.get('goals') ?? 0),
       assists: Number(values.get('assists') ?? 0),
       notes: String(values.get('notes') ?? '').trim(),
+      headshot: player?.headshot,
     })
   }
 
@@ -118,7 +119,9 @@ export function PlayerDialog({ open, player, onOpenChange, onSave, onDelete }: P
         {player && !editing ? (
           <div className="profile-view">
             <div className="profile-header">
-              <span className="profile-avatar">{getInitials(player.name)}</span>
+              <span className="profile-avatar">
+                {player.headshot ? <img src={player.headshot} alt="" /> : getInitials(player.name)}
+              </span>
               <div className="profile-heading">
                 <p className="player-number-large">{String(player.number).padStart(2, '0')}</p>
                 <h3>{player.name}</h3>
