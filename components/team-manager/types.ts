@@ -8,6 +8,9 @@ export type Formation = '4-3-3' | '4-2-3-1' | '4-4-2' | '3-5-2'
 export interface Team {
   name: string
   shortName: string
+  city?: string
+  country?: string
+  competition?: string
   primaryColor: string
   secondaryColor: string
   emblemUrl?: string

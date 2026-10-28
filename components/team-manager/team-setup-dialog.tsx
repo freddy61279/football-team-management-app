@@ -68,6 +68,9 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
     onSave({
       name,
       shortName: shortName.slice(0, 4).toUpperCase(),
+      city: String(values.get('city') ?? '').trim(),
+      country: String(values.get('country') ?? '').trim(),
+      competition: String(values.get('competition') ?? '').trim(),
       primaryColor: String(values.get('primaryColor') ?? DEFAULT_TEAM_COLORS.primaryColor),
       secondaryColor: String(values.get('secondaryColor') ?? DEFAULT_TEAM_COLORS.secondaryColor),
       emblemUrl,
@@ -136,6 +139,18 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
                   aria-describedby="club-short-name-help"
                 />
                 <small id="club-short-name-help">Used on lineup and score graphics.</small>
+              </label>
+              <label className="form-field">
+                <span>City</span>
+                <input className="form-control" name="city" defaultValue={team?.city ?? ''} maxLength={100} />
+              </label>
+              <label className="form-field">
+                <span>Country</span>
+                <input className="form-control" name="country" defaultValue={team?.country ?? ''} maxLength={100} />
+              </label>
+              <label className="form-field form-field--wide">
+                <span>League or competition</span>
+                <input className="form-control" name="competition" defaultValue={team?.competition ?? ''} maxLength={120} />
               </label>
               <div className="form-field color-field">
                 <label htmlFor="club-primary-color">Primary color</label>
