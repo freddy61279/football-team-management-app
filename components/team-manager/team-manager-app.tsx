@@ -169,7 +169,7 @@ export function TeamManagerApp() {
             <LineupView players={players} lineup={lineup} onSave={saveLineup} onAddPlayer={openNewPlayer} />
           ) : null}
           {activeSection === 'graphics' ? (
-            <GraphicsView team={team} matches={matches} onSaveMatch={saveMatch} />
+            <GraphicsView team={team} players={players} lineup={lineup} matches={matches} onSaveMatch={saveMatch} />
           ) : null}
         </main>
 

@@ -3,16 +3,19 @@
 import { useEffect, useRef, useState } from 'react'
 import { Download, Image, Plus, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import type { MatchRecord, Team } from './types'
+import type { Lineup, MatchRecord, Player, Team } from './types'
 
 interface Props {
   team: Team | null
+  players: Player[]
+  lineup: Lineup
   matches: MatchRecord[]
   onSaveMatch: (match: MatchRecord) => void
 }
 
 type GraphicFormat = 'landscape' | 'square' | 'story'
 type GraphicTheme = 'night' | 'paper'
+type GraphicType = 'scoreline' | 'starting-xi'
 
 const dimensions: Record<GraphicFormat, { width: number; height: number; label: string }> = {
   landscape: { width: 1200, height: 675, label: 'Landscape · 16:9' },
@@ -122,11 +125,88 @@ function drawScoreline(
   context.fillText('BUILT FOR THE NEXT 90', width - inset - width * 0.045, height - inset - height * 0.055)
 }
 
+function drawStartingXI(
+  canvas: HTMLCanvasElement,
+  values: { teamName: string; teamShortName: string; teamColor: string; lineup: Lineup; players: Player[] },
+) {
+  const width = 1080
+  const height = 1350
+  canvas.width = width
+  canvas.height = height
+  const context = canvas.getContext('2d')
+  if (!context) return
+
+  const accent = values.teamColor || '#18d978'
+  const background = context.createLinearGradient(0, 0, width, height)
+  background.addColorStop(0, '#050807')
+  background.addColorStop(0.55, '#07140f')
+  background.addColorStop(1, '#020303')
+  context.fillStyle = background
+  context.fillRect(0, 0, width, height)
+
+  context.globalAlpha = 0.12
+  context.fillStyle = accent
+  context.beginPath()
+  context.arc(width * 0.12, height * 0.82, height * 0.3, 0, Math.PI * 2)
+  context.fill()
+  context.beginPath()
+  context.arc(width * 0.88, height * 0.24, height * 0.22, 0, Math.PI * 2)
+  context.fill()
+  context.globalAlpha = 1
+
+  context.textAlign = 'center'
+  context.textBaseline = 'middle'
+  context.fillStyle = 'rgba(246,247,239,.72)'
+  context.font = '700 22px Arial, sans-serif'
+  context.fillText(values.teamShortName.trim().toUpperCase() || values.teamName.trim().toUpperCase() || 'YOUR CLUB', width / 2, 108)
+  context.fillStyle = accent
+  context.font = '900 78px Arial, sans-serif'
+  context.fillText('STARTING XI', width / 2, 220)
+  context.fillStyle = 'rgba(246,247,239,.62)'
+  context.font = '700 24px Arial, sans-serif'
+  context.fillText(values.lineup.formation, width / 2, 274)
+
+  const selected = values.lineup.slots.filter((slot) => slot.playerId).map((slot) => ({
+    slot,
+    player: values.players.find((player) => player.id === slot.playerId),
+  })).filter((entry): entry is { slot: typeof entry.slot; player: Player } => Boolean(entry.player))
+  const rowStart = 370
+  const rowGap = 72
+  context.textAlign = 'left'
+  selected.slice(0, 11).forEach(({ slot, player }, index) => {
+    const y = rowStart + index * rowGap
+    context.fillStyle = accent
+    context.font = '800 28px Arial, sans-serif'
+    context.fillText(String(player.number).padStart(2, '0'), width / 2 - 180, y)
+    context.fillStyle = '#f6f7ef'
+    context.font = '800 30px Arial, sans-serif'
+    context.fillText(player.name.toUpperCase().slice(0, 24), width / 2 - 115, y)
+    context.fillStyle = 'rgba(246,247,239,.42)'
+    context.font = '700 17px Arial, sans-serif'
+    context.fillText(slot.label.toUpperCase(), width / 2 + 230, y)
+    context.strokeStyle = 'rgba(255,255,255,.12)'
+    context.lineWidth = 1
+    context.beginPath()
+    context.moveTo(width / 2 - 180, y + 27)
+    context.lineTo(width / 2 + 270, y + 27)
+    context.stroke()
+  })
+
+  context.textAlign = 'center'
+  context.fillStyle = accent
+  context.font = '800 18px Arial, sans-serif'
+  const bench = values.players.filter((player) => !values.lineup.slots.some((slot) => slot.playerId === player.id)).slice(0, 5)
+  context.fillText(`SUBS  /  ${bench.map((player) => player.name.toUpperCase()).join('  ·  ') || 'ADD SQUAD PLAYERS'}`, width / 2, height - 105)
+  context.fillStyle = 'rgba(246,247,239,.46)'
+  context.font = '700 16px Arial, sans-serif'
+  context.fillText('MATCHDAY LINEUP', width / 2, height - 62)
+}
+
 function slug(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'matchday'
 }
 
-export function GraphicsView({ team, matches, onSaveMatch }: Props) {
+export function GraphicsView({ team, players, lineup, matches, onSaveMatch }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [opponent, setOpponent] = useState('')
   const [competition, setCompetition] = useState('')
@@ -135,11 +215,22 @@ export function GraphicsView({ team, matches, onSaveMatch }: Props) {
   const [teamScore, setTeamScore] = useState('')
   const [opponentScore, setOpponentScore] = useState('')
   const [format, setFormat] = useState<GraphicFormat>('landscape')
+  const [graphicType, setGraphicType] = useState<GraphicType>('scoreline')
   const [theme, setTheme] = useState<GraphicTheme>('night')
   const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     if (!canvasRef.current) return
+    if (graphicType === 'starting-xi') {
+      drawStartingXI(canvasRef.current, {
+        teamName: team?.name ?? '',
+        teamShortName: team?.shortName ?? '',
+        teamColor: team?.primaryColor ?? '#18d978',
+        lineup,
+        players,
+      })
+      return
+    }
     drawScoreline(canvasRef.current, {
       teamName: team?.name ?? '',
       teamShortName: team?.shortName ?? '',
@@ -153,7 +244,7 @@ export function GraphicsView({ team, matches, onSaveMatch }: Props) {
       format,
       theme,
     })
-  }, [team?.name, team?.shortName, team?.primaryColor, opponent, competition, matchDate, venue, teamScore, opponentScore, format, theme])
+  }, [team?.name, team?.shortName, team?.primaryColor, players, lineup, opponent, competition, matchDate, venue, teamScore, opponentScore, format, graphicType, theme])
 
   const hasOneScoreOnly = Boolean(teamScore) !== Boolean(opponentScore)
   const canSaveMatch = opponent.trim().length > 0 && !hasOneScoreOnly
@@ -196,7 +287,7 @@ export function GraphicsView({ team, matches, onSaveMatch }: Props) {
         <div>
           <p className="section-kicker">MATCHDAY STUDIO</p>
           <h2 id="graphics-heading" className="page-intro-title">Make the score the story.</h2>
-          <p className="page-intro-copy">Build a clean result card, preview it live, and export a crisp PNG for your channels.</p>
+          <p className="page-intro-copy">Build a matchday graphic, preview it live, and export a crisp PNG for your channels.</p>
         </div>
         <span className="studio-badge"><Sparkles aria-hidden="true" /> PNG EXPORT</span>
       </div>
@@ -242,6 +333,22 @@ export function GraphicsView({ team, matches, onSaveMatch }: Props) {
           </div>
 
           <fieldset className="graphic-theme-fieldset">
+            <legend>Graphic type</legend>
+            <div className="theme-choice-row">
+              <label className={`theme-choice${graphicType === 'scoreline' ? ' theme-choice--active' : ''}`}>
+                <input type="radio" name="graphic-type" checked={graphicType === 'scoreline'} onChange={() => setGraphicType('scoreline')} />
+                <span className="theme-swatch theme-swatch--scoreline" />
+                <span><strong>Scoreline</strong><small>Existing match card</small></span>
+              </label>
+              <label className={`theme-choice${graphicType === 'starting-xi' ? ' theme-choice--active' : ''}`}>
+                <input type="radio" name="graphic-type" checked={graphicType === 'starting-xi'} onChange={() => setGraphicType('starting-xi')} />
+                <span className="theme-swatch theme-swatch--lineup" />
+                <span><strong>Starting XI</strong><small>Attached poster style</small></span>
+              </label>
+            </div>
+          </fieldset>
+
+          <fieldset className="graphic-theme-fieldset">
             <legend>Graphic style</legend>
             <div className="theme-choice-row">
               <label className={`theme-choice theme-choice--night${theme === 'night' ? ' theme-choice--active' : ''}`}>
@@ -282,7 +389,7 @@ export function GraphicsView({ team, matches, onSaveMatch }: Props) {
           <div className="preview-card-header">
             <div>
               <p className="section-kicker">LIVE PREVIEW</p>
-              <h3 className="card-title">Your matchday card</h3>
+              <h3 className="card-title">{graphicType === 'starting-xi' ? 'Your Starting XI poster' : 'Your matchday card'}</h3>
             </div>
             <span className="live-dot"><span /> Updating</span>
           </div>
