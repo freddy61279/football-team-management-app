@@ -88,13 +88,17 @@ export function DashboardView({ team, players, lineup, matches, onCreateTeam, on
             <ArrowUpRight data-icon="inline-end" aria-hidden="true" />
           </Button>
         </div>
-        <div className="hero-graphic" aria-hidden="true">
-          <div className="hero-ring hero-ring--outer" />
-          <div className="hero-ring hero-ring--inner" />
-          <div className="hero-club-mark" style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' } as React.CSSProperties}>
-            {team?.emblemUrl ? <img src={team.emblemUrl} alt={`${team.name} emblem`} /> : <span>{team?.shortName || 'FC'}</span>}
+        <div className="hero-graphic" aria-label={team?.emblemUrl ? `${team.name} club emblem` : 'Club emblem not uploaded'}>
+          <div className="hero-ring hero-ring--outer" aria-hidden="true" />
+          <div className="hero-ring hero-ring--inner" aria-hidden="true" />
+          <div className="hero-club-mark" style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' }}>
+            {team?.emblemUrl ? (
+              <img src={team.emblemUrl} alt={`${team.name} club emblem`} />
+            ) : (
+              <span aria-hidden="true">+</span>
+            )}
           </div>
-          <span className="hero-coordinate">00° 00&apos; / TEAM HQ</span>
+          <span className="hero-coordinate" aria-hidden="true">00° 00&apos; / TEAM HQ</span>
         </div>
         <span className="hero-index">01</span>
       </section>
