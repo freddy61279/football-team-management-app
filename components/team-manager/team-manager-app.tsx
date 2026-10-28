@@ -41,6 +41,14 @@ export function TeamManagerApp() {
       data: { user: { user_metadata?: Record<string, unknown> | null } | null }
     }) => {
       const metadata = result.data.user?.user_metadata
+      const storedPlayers = Array.isArray(metadata?.players) ? metadata.players : []
+      const validPlayers = storedPlayers.filter((player): player is Player => {
+        if (!player || typeof player !== 'object') return false
+        const candidate = player as Partial<Player>
+        return typeof candidate.id === 'string' && typeof candidate.name === 'string' && typeof candidate.number === 'number'
+      })
+      setPlayers(validPlayers)
+
       const clubName = typeof metadata?.club_name === 'string' ? metadata.club_name.trim() : ''
       if (!clubName) return
 
