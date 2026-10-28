@@ -4,19 +4,19 @@ import { useEffect, useRef, useState } from 'react'
 import { Download, Image, Plus, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Lineup, MatchRecord, Player, Team } from './types'
+import type { GraphicType } from './lineup-view'
 
 interface Props {
   team: Team | null
   players: Player[]
   lineup: Lineup
+  graphicType: GraphicType
   matches: MatchRecord[]
   onSaveMatch: (match: MatchRecord) => void
 }
 
 type GraphicFormat = 'landscape' | 'square' | 'story'
 type GraphicTheme = 'night' | 'paper'
-type GraphicType = 'scoreline' | 'starting-xi'
-
 const dimensions: Record<GraphicFormat, { width: number; height: number; label: string }> = {
   landscape: { width: 1200, height: 675, label: 'Landscape · 16:9' },
   square: { width: 1080, height: 1080, label: 'Square · 1:1' },
@@ -215,7 +215,6 @@ export function GraphicsView({ team, players, lineup, matches, onSaveMatch }: Pr
   const [teamScore, setTeamScore] = useState('')
   const [opponentScore, setOpponentScore] = useState('')
   const [format, setFormat] = useState<GraphicFormat>('landscape')
-  const [graphicType, setGraphicType] = useState<GraphicType>('scoreline')
   const [theme, setTheme] = useState<GraphicTheme>('night')
   const [saved, setSaved] = useState(false)
 
@@ -331,22 +330,6 @@ export function GraphicsView({ team, players, lineup, matches, onSaveMatch }: Pr
               <input className="form-control" type="number" min={0} max={99} inputMode="numeric" value={opponentScore} onChange={(event) => { setOpponentScore(event.target.value); setSaved(false) }} placeholder="—" />
             </label>
           </div>
-
-          <fieldset className="graphic-theme-fieldset">
-            <legend>Graphic type</legend>
-            <div className="theme-choice-row">
-              <label className={`theme-choice${graphicType === 'scoreline' ? ' theme-choice--active' : ''}`}>
-                <input type="radio" name="graphic-type" checked={graphicType === 'scoreline'} onChange={() => setGraphicType('scoreline')} />
-                <span className="theme-swatch theme-swatch--scoreline" />
-                <span><strong>Scoreline</strong><small>Existing match card</small></span>
-              </label>
-              <label className={`theme-choice${graphicType === 'starting-xi' ? ' theme-choice--active' : ''}`}>
-                <input type="radio" name="graphic-type" checked={graphicType === 'starting-xi'} onChange={() => setGraphicType('starting-xi')} />
-                <span className="theme-swatch theme-swatch--lineup" />
-                <span><strong>Starting XI</strong><small>Attached poster style</small></span>
-              </label>
-            </div>
-          </fieldset>
 
           <fieldset className="graphic-theme-fieldset">
             <legend>Graphic style</legend>

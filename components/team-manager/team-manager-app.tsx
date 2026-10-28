@@ -12,6 +12,7 @@ import { PlayersView } from './players-view'
 import { MobileNavigation, Sidebar } from './sidebar'
 import { TeamSetupDialog } from './team-setup-dialog'
 import type { Lineup, MatchRecord, Player, PlayerDraft, Team, ViewKey } from './types'
+import type { GraphicType } from './lineup-view'
 
 const titles: Record<ViewKey, string> = {
   overview: 'Team overview',
@@ -25,6 +26,7 @@ export function TeamManagerApp() {
   const [team, setTeam] = useState<Team | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [lineup, setLineup] = useState<Lineup>({ formation: '4-3-3', slots: [] })
+  const [graphicType, setGraphicType] = useState<GraphicType>('scoreline')
   const [matches, setMatches] = useState<MatchRecord[]>([])
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [playerDialog, setPlayerDialog] = useState<{ open: boolean; player: Player | null }>({ open: false, player: null })
@@ -166,10 +168,10 @@ export function TeamManagerApp() {
             />
           ) : null}
           {activeSection === 'lineup' ? (
-            <LineupView players={players} lineup={lineup} onSave={saveLineup} onAddPlayer={openNewPlayer} />
+            <LineupView players={players} lineup={lineup} graphicType={graphicType} onGraphicTypeChange={setGraphicType} onSave={saveLineup} onAddPlayer={openNewPlayer} />
           ) : null}
           {activeSection === 'graphics' ? (
-            <GraphicsView team={team} players={players} lineup={lineup} matches={matches} onSaveMatch={saveMatch} />
+            <GraphicsView team={team} players={players} lineup={lineup} graphicType={graphicType} matches={matches} onSaveMatch={saveMatch} />
           ) : null}
         </main>
 

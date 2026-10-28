@@ -7,16 +7,20 @@ import { getFormationSlots } from './formation-data'
 import type { Formation, Lineup, LineupSlot, Player } from './types'
 import { getInitials } from './types'
 
+export type GraphicType = 'scoreline' | 'starting-xi'
+
 interface Props {
   players: Player[]
   lineup: Lineup
+  graphicType: GraphicType
+  onGraphicTypeChange: (type: GraphicType) => void
   onSave: (lineup: Lineup) => void
   onAddPlayer: () => void
 }
 
 const formationOptions: Formation[] = ['4-3-3', '4-2-3-1', '4-4-2', '3-5-2']
 
-export function LineupView({ players, lineup, onSave, onAddPlayer }: Props) {
+export function LineupView({ players, lineup, graphicType, onGraphicTypeChange, onSave, onAddPlayer }: Props) {
   const [formation, setFormation] = useState<Formation>(lineup.formation)
   const [slots, setSlots] = useState<LineupSlot[]>(() => getFormationSlots(lineup.formation, lineup.slots))
   const [activeSlotId, setActiveSlotId] = useState<string | null>(null)
@@ -79,6 +83,22 @@ export function LineupView({ players, lineup, onSave, onAddPlayer }: Props) {
           </Button>
         </div>
       </div>
+
+      <fieldset className="graphic-theme-fieldset lineup-graphic-type-fieldset">
+        <legend>Lineup graphic</legend>
+        <div className="theme-choice-row">
+          <label className={`theme-choice${graphicType === 'scoreline' ? ' theme-choice--active' : ''}`}>
+            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'scoreline'} onChange={() => onGraphicTypeChange('scoreline')} />
+            <span className="theme-swatch theme-swatch--scoreline" />
+            <span><strong>Scoreline</strong><small>Existing match card</small></span>
+          </label>
+          <label className={`theme-choice${graphicType === 'starting-xi' ? ' theme-choice--active' : ''}`}>
+            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'starting-xi'} onChange={() => onGraphicTypeChange('starting-xi')} />
+            <span className="theme-swatch theme-swatch--lineup" />
+            <span><strong>Starting XI</strong><small>Attached poster style</small></span>
+          </label>
+        </div>
+      </fieldset>
 
       <div className="lineup-layout">
         <section className="content-card lineup-board-card" aria-label={`${formation} formation pitch`}>
