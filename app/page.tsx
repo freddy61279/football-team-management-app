@@ -13,11 +13,9 @@ export default function Page() {
           Sign in to manage your squad, or create an account to get started.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:justify-center">
-          <Button asChild>
-            <Link href="/auth/login">Sign in</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link href="/auth/sign-up">Create account</Link>
+          <Button render={<Link href="/auth/login" />}>Sign in</Button>
+          <Button render={<Link href="/auth/sign-up" />} variant="outline">
+            Create account
           </Button>
         </div>
       </section>
