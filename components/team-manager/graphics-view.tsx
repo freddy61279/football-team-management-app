@@ -206,7 +206,7 @@ function slug(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'matchday'
 }
 
-export function GraphicsView({ team, players, lineup, matches, onSaveMatch }: Props) {
+export function GraphicsView({ team, players, lineup, graphicType, matches, onSaveMatch }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const [opponent, setOpponent] = useState('')
   const [competition, setCompetition] = useState('')
