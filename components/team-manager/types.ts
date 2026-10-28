@@ -10,6 +10,7 @@ export interface Team {
   shortName: string
   primaryColor: string
   secondaryColor: string
+  emblemUrl?: string
 }
 
 export interface Player {

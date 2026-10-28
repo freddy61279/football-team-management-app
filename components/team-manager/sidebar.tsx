@@ -30,7 +30,7 @@ function ClubMark({ team }: { team: Team | null }) {
       style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' } as React.CSSProperties}
       aria-hidden="true"
     >
-      {team?.shortName?.slice(0, 3) || 'TL'}
+      {team?.emblemUrl ? <img src={team.emblemUrl} alt="" /> : team?.shortName?.slice(0, 3) || 'TL'}
     </span>
   )
 }
