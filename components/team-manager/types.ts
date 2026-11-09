@@ -68,8 +68,8 @@ export const PLAYER_AVAILABILITY: PlayerAvailability[] = [
 ]
 
 export const DEFAULT_TEAM_COLORS = {
-  primaryColor: '#B8E95B',
-  secondaryColor: '#18352B',
+  primaryColor: '#EF233C',
+  secondaryColor: '#090909',
 }
 
 export function getInitials(name: string) {

@@ -91,7 +91,7 @@ export function DashboardView({ team, players, lineup, matches, onCreateTeam, on
         <div className="hero-graphic" aria-hidden="true">
           <div className="hero-ring hero-ring--outer" />
           <div className="hero-ring hero-ring--inner" />
-          <div className="hero-club-mark" style={{ '--club-accent': team?.primaryColor ?? '#B8E95B' } as React.CSSProperties}>
+          <div className="hero-club-mark" style={{ '--club-accent': team?.primaryColor ?? '#EF233C' } as React.CSSProperties}>
             {team?.emblemUrl ? <img src={team.emblemUrl} alt={`${team.name} emblem`} /> : <span>{team?.shortName || 'FC'}</span>}
           </div>
           <span className="hero-coordinate">00° 00&apos; / TEAM HQ</span>

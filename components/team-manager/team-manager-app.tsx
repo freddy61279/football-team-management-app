@@ -51,7 +51,7 @@ export function TeamManagerApp() {
         shortName: typeof metadata?.short_name === 'string' && metadata.short_name.trim()
           ? metadata.short_name.trim().slice(0, 4).toUpperCase()
           : clubName.replace(/[^a-z0-9]/gi, '').slice(0, 3).toUpperCase(),
-        primaryColor: typeof metadata?.primary_color === 'string' ? metadata.primary_color : '#B8E95B',
+        primaryColor: typeof metadata?.primary_color === 'string' ? metadata.primary_color : '#EF233C',
         secondaryColor: typeof metadata?.secondary_color === 'string' ? metadata.secondary_color : '#18352B',
         emblemUrl: typeof metadata?.emblem_url === 'string' ? metadata.emblem_url : undefined,
       })

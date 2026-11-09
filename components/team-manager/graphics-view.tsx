@@ -48,8 +48,8 @@ function drawScoreline(
   const accent = values.teamColor || '#EF233C'
   const isPaper = values.theme === 'paper'
   const background = context.createLinearGradient(0, 0, width, height)
-  background.addColorStop(0, isPaper ? '#F2F1E8' : '#13271F')
-  background.addColorStop(1, isPaper ? '#DFE5D6' : '#263D31')
+  background.addColorStop(0, isPaper ? '#F2F1E8' : '#090909')
+  background.addColorStop(1, isPaper ? '#DFE5D6' : '#2b0b0f')
   context.fillStyle = background
   context.fillRect(0, 0, width, height)
 
@@ -69,7 +69,7 @@ function drawScoreline(
   context.lineWidth = Math.max(2, width * 0.002)
   context.strokeRect(inset, inset, width - inset * 2, height - inset * 2)
 
-  const textColor = isPaper ? '#18352B' : '#F6F7EF'
+  const textColor = isPaper ? '#090909' : '#F6F7EF'
   const mutedColor = isPaper ? '#52645A' : 'rgba(246,247,239,.68)'
   const topY = values.format === 'story' ? height * 0.2 : height * 0.21
   const cardY = values.format === 'story' ? height * 0.31 : height * 0.31
@@ -232,7 +232,7 @@ export function GraphicsView({ team, players, lineup, graphicType, matches, onSa
       drawStartingXI(canvasRef.current, {
         teamName: team?.name ?? '',
         teamShortName: team?.shortName ?? '',
-        teamColor: team?.primaryColor ?? '#18d978',
+        teamColor: team?.primaryColor ?? '#D90429',
         lineup,
         players,
       })
