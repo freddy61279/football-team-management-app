@@ -38,6 +38,11 @@ export function TeamManagerApp() {
 
     void supabase.auth.getUser().then(({ data }) => {
       const metadata = data.user?.user_metadata
+      const savedPlayers = Array.isArray(metadata?.players)
+        ? metadata.players.filter((item): item is Player => Boolean(item && typeof item === 'object' && typeof item.id === 'string' && typeof item.name === 'string'))
+        : []
+      if (savedPlayers.length > 0) setPlayers(savedPlayers)
+
       const clubName = typeof metadata?.club_name === 'string' ? metadata.club_name.trim() : ''
       if (!clubName) return
 
@@ -67,36 +72,49 @@ export function TeamManagerApp() {
     setPlayerDialog({ open: true, player })
   }
 
+  async function persistPlayers(nextPlayers: Player[], successMessage: string) {
+    setPlayers(nextPlayers)
+    const supabase = createSupabaseBrowserClient()
+    const { error } = await supabase.auth.updateUser({ data: { players: nextPlayers } })
+    setNotice(error ? 'Player changes were applied here, but could not be synced to your account.' : successMessage)
+  }
+
   function savePlayer(player: Player) {
     const isExisting = players.some((item) => item.id === player.id)
-    setPlayers((current) => isExisting
-      ? current.map((item) => item.id === player.id ? player : item)
-      : [player, ...current])
+    void persistPlayers(
+      isExisting ? players.map((item) => item.id === player.id ? player : item) : [player, ...players],
+      `${player.name} profile ${isExisting ? 'updated' : 'added'} to your account.`,
+    )
     setPlayerDialog({ open: false, player: null })
-    setNotice(`${player.name} profile ${isExisting ? 'updated' : 'added'} in this preview.`)
   }
 
   function importPlayers(drafts: PlayerDraft[]) {
     const importedPlayers = drafts.map((draft) => ({ ...draft, id: globalThis.crypto.randomUUID() }))
-    setPlayers((current) => [...importedPlayers, ...current])
-    setNotice(`${importedPlayers.length} player${importedPlayers.length === 1 ? '' : 's'} imported to this preview squad.`)
+    void persistPlayers(
+      [...importedPlayers, ...players],
+      `${importedPlayers.length} player${importedPlayers.length === 1 ? '' : 's'} saved to your account.`,
+    )
   }
 
   function updatePlayerHeadshot(playerId: string, headshot: string) {
     const player = players.find((item) => item.id === playerId)
-    setPlayers((current) => current.map((item) => item.id === playerId ? { ...item, headshot } : item))
-    setNotice(`${player?.name ?? 'Player'} headshot updated in this preview.`)
+    void persistPlayers(
+      players.map((item) => item.id === playerId ? { ...item, headshot } : item),
+      `${player?.name ?? 'Player'} headshot saved to your account.`,
+    )
   }
 
   function deletePlayer(playerId: string) {
     const removed = players.find((player) => player.id === playerId)
-    setPlayers((current) => current.filter((player) => player.id !== playerId))
+    void persistPlayers(
+      players.filter((player) => player.id !== playerId),
+      removed ? `${removed.name} removed from your account.` : 'Player removed from your account.',
+    )
     setLineup((current) => ({
       ...current,
       slots: current.slots.map((slot) => slot.playerId === playerId ? { ...slot, playerId: null } : slot),
     }))
     setPlayerDialog({ open: false, player: null })
-    setNotice(removed ? `${removed.name} removed from this preview roster.` : 'Player removed from this preview roster.')
   }
 
   async function saveTeam(nextTeam: Team) {
