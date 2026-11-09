@@ -45,7 +45,7 @@ function drawScoreline(
   const context = canvas.getContext('2d')
   if (!context) return
 
-  const accent = values.teamColor || '#B8E95B'
+  const accent = values.teamColor || '#EF233C'
   const isPaper = values.theme === 'paper'
   const background = context.createLinearGradient(0, 0, width, height)
   background.addColorStop(0, isPaper ? '#F2F1E8' : '#13271F')
@@ -136,16 +136,16 @@ function drawStartingXI(
   const context = canvas.getContext('2d')
   if (!context) return
 
-  const accent = values.teamColor || '#18d978'
+  const accent = values.teamColor || '#EF233C'
   const background = context.createLinearGradient(0, 0, width, height)
-  background.addColorStop(0, '#071b52')
-  background.addColorStop(0.55, '#0d3c9b')
-  background.addColorStop(1, '#06163f')
+  background.addColorStop(0, '#3b0b12')
+  background.addColorStop(0.55, '#8f1428')
+  background.addColorStop(1, '#24070d')
   context.fillStyle = background
   context.fillRect(0, 0, width, height)
 
   context.globalAlpha = 0.2
-  context.fillStyle = '#5f8fff'
+  context.fillStyle = '#ff5266'
   context.beginPath()
   context.arc(width * 0.12, height * 0.82, height * 0.3, 0, Math.PI * 2)
   context.fill()
@@ -241,7 +241,7 @@ export function GraphicsView({ team, players, lineup, graphicType, matches, onSa
     drawScoreline(canvasRef.current, {
       teamName: team?.name ?? '',
       teamShortName: team?.shortName ?? '',
-      teamColor: team?.primaryColor ?? '#B8E95B',
+      teamColor: team?.primaryColor ?? '#EF233C',
       opponent,
       competition,
       matchDate,
