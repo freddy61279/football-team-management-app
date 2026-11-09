@@ -23,20 +23,33 @@ const positionOptions: Array<'All positions' | PlayerPosition> = [
   'Forward',
 ]
 
+const positionOrder: Record<PlayerPosition, number> = {
+  Goalkeeper: 0,
+  Defender: 1,
+  Midfielder: 2,
+  Forward: 3,
+}
+
 export function PlayersView({ players, onAddPlayer, onOpenPlayer, onImportPlayers, onUploadHeadshot }: Props) {
   const [search, setSearch] = useState('')
   const [position, setPosition] = useState<'All positions' | PlayerPosition>('All positions')
 
   const filteredPlayers = useMemo(() => {
     const normalizedSearch = search.trim().toLowerCase()
-    return players.filter((player) => {
-      const matchesSearch =
-        !normalizedSearch ||
-        player.name.toLowerCase().includes(normalizedSearch) ||
-        String(player.number).includes(normalizedSearch)
-      const matchesPosition = position === 'All positions' || player.position === position
-      return matchesSearch && matchesPosition
-    })
+    return players
+      .filter((player) => {
+        const matchesSearch =
+          !normalizedSearch ||
+          player.name.toLowerCase().includes(normalizedSearch) ||
+          String(player.number).includes(normalizedSearch)
+        const matchesPosition = position === 'All positions' || player.position === position
+        return matchesSearch && matchesPosition
+      })
+      .sort((a, b) => {
+        const positionDifference = positionOrder[a.position] - positionOrder[b.position]
+        if (positionDifference !== 0) return positionDifference
+        return a.number - b.number || a.name.localeCompare(b.name)
+      })
   }, [players, position, search])
 
   const availableCount = players.filter((player) => player.availability === 'Available').length
