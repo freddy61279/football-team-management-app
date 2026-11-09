@@ -27,7 +27,7 @@ export function TeamManagerApp() {
   const [team, setTeam] = useState<Team | null>(null)
   const [players, setPlayers] = useState<Player[]>([])
   const [lineup, setLineup] = useState<Lineup>({ formation: '4-3-3', slots: [] })
-  const [graphicType, setGraphicType] = useState<GraphicType>('scoreline')
+  const [graphicType, setGraphicType] = useState<GraphicType>('field')
   const [matches, setMatches] = useState<MatchRecord[]>([])
   const [teamDialogOpen, setTeamDialogOpen] = useState(false)
   const [playerDialog, setPlayerDialog] = useState<{ open: boolean; player: Player | null }>({ open: false, player: null })

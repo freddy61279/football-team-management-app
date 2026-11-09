@@ -138,14 +138,14 @@ function drawStartingXI(
 
   const accent = values.teamColor || '#18d978'
   const background = context.createLinearGradient(0, 0, width, height)
-  background.addColorStop(0, '#050807')
-  background.addColorStop(0.55, '#07140f')
-  background.addColorStop(1, '#020303')
+  background.addColorStop(0, '#071b52')
+  background.addColorStop(0.55, '#0d3c9b')
+  background.addColorStop(1, '#06163f')
   context.fillStyle = background
   context.fillRect(0, 0, width, height)
 
-  context.globalAlpha = 0.12
-  context.fillStyle = accent
+  context.globalAlpha = 0.2
+  context.fillStyle = '#5f8fff'
   context.beginPath()
   context.arc(width * 0.12, height * 0.82, height * 0.3, 0, Math.PI * 2)
   context.fill()
@@ -159,9 +159,11 @@ function drawStartingXI(
   context.fillStyle = 'rgba(246,247,239,.72)'
   context.font = '700 22px Arial, sans-serif'
   context.fillText(values.teamShortName.trim().toUpperCase() || values.teamName.trim().toUpperCase() || 'YOUR CLUB', width / 2, 108)
-  context.fillStyle = accent
+  context.fillStyle = '#f5f7ff'
   context.font = '900 78px Arial, sans-serif'
-  context.fillText('STARTING XI', width / 2, 220)
+  context.fillText('STARTING ', width / 2 - 46, 220)
+  context.fillStyle = '#ef202f'
+  context.fillText('XI', width / 2 + 225, 220)
   context.fillStyle = 'rgba(246,247,239,.62)'
   context.font = '700 24px Arial, sans-serif'
   context.fillText(values.lineup.formation, width / 2, 274)
@@ -172,6 +174,12 @@ function drawStartingXI(
   })).filter((entry): entry is { slot: typeof entry.slot; player: Player } => Boolean(entry.player))
   const rowStart = 370
   const rowGap = 72
+  context.strokeStyle = '#ef202f'
+  context.lineWidth = 5
+  context.beginPath()
+  context.moveTo(width / 2 - 190, rowStart - 34)
+  context.lineTo(width / 2 - 190, rowStart + rowGap * 10 + 20)
+  context.stroke()
   context.textAlign = 'left'
   selected.slice(0, 11).forEach(({ slot, player }, index) => {
     const y = rowStart + index * rowGap
@@ -220,7 +228,7 @@ export function GraphicsView({ team, players, lineup, graphicType, matches, onSa
 
   useEffect(() => {
     if (!canvasRef.current) return
-    if (graphicType === 'starting-xi') {
+    if (graphicType === 'list') {
       drawStartingXI(canvasRef.current, {
         teamName: team?.name ?? '',
         teamShortName: team?.shortName ?? '',
@@ -256,7 +264,7 @@ export function GraphicsView({ team, players, lineup, graphicType, matches, onSa
       const url = URL.createObjectURL(blob)
       const link = document.createElement('a')
       link.href = url
-      link.download = `${slug(team?.shortName || team?.name || 'club')}-${slug(opponent || 'scoreline')}.png`
+      link.download = `${slug(team?.shortName || team?.name || 'club')}-${slug(opponent || (graphicType === 'list' ? 'starting-xi' : 'scoreline'))}.png`
       link.click()
       window.setTimeout(() => URL.revokeObjectURL(url), 1000)
     }, 'image/png')
@@ -372,7 +380,7 @@ export function GraphicsView({ team, players, lineup, graphicType, matches, onSa
           <div className="preview-card-header">
             <div>
               <p className="section-kicker">LIVE PREVIEW</p>
-              <h3 className="card-title">{graphicType === 'starting-xi' ? 'Your Starting XI poster' : 'Your matchday card'}</h3>
+              <h3 className="card-title">{graphicType === 'list' ? 'Your Starting XI list poster' : 'Your matchday card'}</h3>
             </div>
             <span className="live-dot"><span /> Updating</span>
           </div>

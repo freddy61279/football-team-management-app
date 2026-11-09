@@ -7,7 +7,7 @@ import { getFormationSlots } from './formation-data'
 import type { Formation, Lineup, LineupSlot, Player } from './types'
 import { getInitials } from './types'
 
-export type GraphicType = 'scoreline' | 'starting-xi'
+export type GraphicType = 'field' | 'list'
 
 interface Props {
   players: Player[]
@@ -87,15 +87,15 @@ export function LineupView({ players, lineup, graphicType, onGraphicTypeChange, 
       <fieldset className="graphic-theme-fieldset lineup-graphic-type-fieldset">
         <legend>Lineup graphic</legend>
         <div className="theme-choice-row">
-          <label className={`theme-choice${graphicType === 'scoreline' ? ' theme-choice--active' : ''}`}>
-            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'scoreline'} onChange={() => onGraphicTypeChange('scoreline')} />
+          <label className={`theme-choice${graphicType === 'field' ? ' theme-choice--active' : ''}`}>
+            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'field'} onChange={() => onGraphicTypeChange('field')} />
             <span className="theme-swatch theme-swatch--scoreline" />
-            <span><strong>Scoreline</strong><small>Existing match card</small></span>
+            <span><strong>Field view</strong><small>Interactive pitch layout</small></span>
           </label>
-          <label className={`theme-choice${graphicType === 'starting-xi' ? ' theme-choice--active' : ''}`}>
-            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'starting-xi'} onChange={() => onGraphicTypeChange('starting-xi')} />
+          <label className={`theme-choice${graphicType === 'list' ? ' theme-choice--active' : ''}`}>
+            <input type="radio" name="lineup-graphic-type" checked={graphicType === 'list'} onChange={() => onGraphicTypeChange('list')} />
             <span className="theme-swatch theme-swatch--lineup" />
-            <span><strong>Starting XI</strong><small>Attached poster style</small></span>
+            <span><strong>List view</strong><small>Starting XI poster style</small></span>
           </label>
         </div>
       </fieldset>
@@ -109,33 +109,54 @@ export function LineupView({ players, lineup, graphicType, onGraphicTypeChange, 
             </div>
             <div className="attack-direction"><ArrowUp aria-hidden="true" /><span>ATTACK</span></div>
           </div>
-          <div className="pitch-wrap">
-            <div className="pitch-lines" aria-hidden="true">
-              <span className="pitch-half-line" />
-              <span className="pitch-center-circle" />
-              <span className="pitch-box pitch-box--top" />
-              <span className="pitch-box pitch-box--bottom" />
-              <span className="pitch-goal pitch-goal--top" />
-              <span className="pitch-goal pitch-goal--bottom" />
+          {graphicType === 'field' ? (
+            <div className="pitch-wrap">
+              <div className="pitch-lines" aria-hidden="true">
+                <span className="pitch-half-line" />
+                <span className="pitch-center-circle" />
+                <span className="pitch-box pitch-box--top" />
+                <span className="pitch-box pitch-box--bottom" />
+                <span className="pitch-goal pitch-goal--top" />
+                <span className="pitch-goal pitch-goal--bottom" />
+              </div>
+              {slots.map((slot) => {
+                const player = slot.playerId ? players.find((item) => item.id === slot.playerId) : null
+                return (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    className={`pitch-player${player ? ' pitch-player--filled' : ' pitch-player--empty'}${activeSlotId === slot.id ? ' pitch-player--active' : ''}`}
+                    style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
+                    aria-label={player ? `${slot.label}, ${player.name}. Select to change.` : `Assign a player to ${slot.label}`}
+                    aria-pressed={activeSlotId === slot.id}
+                    onClick={() => setActiveSlotId((current) => current === slot.id ? null : slot.id)}
+                  >
+                    <span className="pitch-player-number">{player ? String(player.number).padStart(2, '0') : <Plus aria-hidden="true" />}</span>
+                    <span className="pitch-player-name">{player ? player.name.split(' ')[0] : slot.label}</span>
+                  </button>
+                )
+              })}
             </div>
-            {slots.map((slot) => {
-              const player = slot.playerId ? players.find((item) => item.id === slot.playerId) : null
-              return (
-                <button
-                  key={slot.id}
-                  type="button"
-                  className={`pitch-player${player ? ' pitch-player--filled' : ' pitch-player--empty'}${activeSlotId === slot.id ? ' pitch-player--active' : ''}`}
-                  style={{ left: `${slot.x}%`, top: `${slot.y}%` }}
-                  aria-label={player ? `${slot.label}, ${player.name}. Select to change.` : `Assign a player to ${slot.label}`}
-                  aria-pressed={activeSlotId === slot.id}
-                  onClick={() => setActiveSlotId((current) => current === slot.id ? null : slot.id)}
-                >
-                  <span className="pitch-player-number">{player ? String(player.number).padStart(2, '0') : <Plus aria-hidden="true" />}</span>
-                  <span className="pitch-player-name">{player ? player.name.split(' ')[0] : slot.label}</span>
-                </button>
-              )
-            })}
-          </div>
+          ) : (
+            <div className="lineup-list-preview" aria-label="Starting XI list preview">
+              <div className="lineup-list-preview__heading"><span>STARTING</span><strong>XI</strong></div>
+              <p className="lineup-list-preview__subheading">{formation} formation</p>
+              <div className="lineup-list-preview__rows">
+                {slots.map((slot) => {
+                  const player = slot.playerId ? players.find((item) => item.id === slot.playerId) : null
+                  return (
+                    <button key={slot.id} type="button" className="lineup-list-preview__row" onClick={() => setActiveSlotId(slot.id)}>
+                      <span className="lineup-list-preview__number">{player ? player.number : '--'}</span>
+                      <span className="lineup-list-preview__position">{slot.label}</span>
+                      <span className="lineup-list-preview__name">{player?.name || 'Open position'}</span>
+                      {slot.label === 'GK' || slot.label === 'ST' ? <span className="lineup-list-preview__mark">{slot.label === 'GK' ? 'GK' : 'XI'}</span> : null}
+                    </button>
+                  )
+                })}
+              </div>
+              <p className="lineup-list-preview__footer">{benchPlayers.length} substitutes available</p>
+            </div>
+          )}
           <div className="lineup-board-footer">
             <span><span className="legend-dot legend-dot--selected" /> Selected</span>
             <span><span className="legend-dot legend-dot--open" /> Open position</span>
