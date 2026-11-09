@@ -41,24 +41,42 @@ export function TeamSetupDialog({ open, team, onOpenChange, onSave }: Props) {
         return
       }
       setUploading(true)
-      const supabase = createSupabaseBrowserClient()
-      const { data: userData } = await supabase.auth.getUser()
-      const userId = userData.user?.id
-      if (!userId) {
-        setUploadError('Sign in again before uploading an emblem.')
-        setUploading(false)
+      try {
+        const supabase = createSupabaseBrowserClient()
+        const { data: userData, error: userError } = await supabase.auth.getUser()
+        const userId = userData.user?.id
+        if (userError || !userId) {
+          setUploadError('Your session expired. Sign in again before uploading an emblem.')
+          return
+        }
+
+        const extension = emblem.name.split('.').pop()?.toLowerCase() || 'png'
+        const path = `${userId}/emblem-${Date.now()}.${extension}`
+        const { error } = await supabase.storage
+          .from('team-emblems')
+          .upload(path, emblem, {
+            upsert: true,
+            cacheControl: '3600',
+            contentType: emblem.type,
+          })
+
+        if (error) {
+          setUploadError(`Could not save the emblem: ${error.message}`)
+          return
+        }
+
+        const { data: publicUrl } = supabase.storage.from('team-emblems').getPublicUrl(path)
+        if (!publicUrl.publicUrl) {
+          setUploadError('The emblem uploaded, but its public URL could not be created.')
+          return
+        }
+        emblemUrl = publicUrl.publicUrl
+      } catch {
+        setUploadError('Could not save the emblem. Please try again.')
         return
-      }
-      const extension = emblem.name.split('.').pop()?.toLowerCase() || 'png'
-      const path = `${userId}/emblem-${Date.now()}.${extension}`
-      const { error } = await supabase.storage.from('team-emblems').upload(path, emblem, { upsert: true, contentType: emblem.type })
-      if (error) {
-        setUploadError('Could not upload the emblem. Check that the team-emblems bucket is available.')
+      } finally {
         setUploading(false)
-        return
       }
-      emblemUrl = supabase.storage.from('team-emblems').getPublicUrl(path).data.publicUrl
-      setUploading(false)
     }
     const name = String(values.get('name') ?? '').trim()
     const enteredShortName = String(values.get('shortName') ?? '').trim()
